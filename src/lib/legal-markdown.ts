@@ -1,6 +1,6 @@
 /**
  * アプリ側で承認された法務 Markdown を、文言を変えずに HTML へ写す。
- * 使える書式は見出し（# / ##）、1 行の段落、段落全体の太字、裸の https URL だけ。
+ * 使える書式は見出し（# / ##）、1 行の段落、段落全体の太字、裸の https URL と裸のメールアドレスだけ。
  * 字下げ・箇条書き・引用・コード・罫線・強調・打ち消し線・リンク記法・HTML・実体参照・エスケープ・http URL が来たら
  * 推測で描かずに失敗させ、原文と表示がずれないようにする。
  */
@@ -12,6 +12,8 @@ const CLOSING_HASHES = /\s#+\s*$/u;
 /** 単語の中の `_`（@Yuto_Program）は文字として許し、単語の端の `_` は強調とみなして拒む。 */
 const UNSUPPORTED_INLINE = /[*`[\]\\<~]|&(?:#\d+|#x[\da-f]+|[a-z][a-z\d]*);|(?:^|[^\p{L}\p{N}])_|_(?:[^\p{L}\p{N}]|$)|http:\/\//iu;
 const URL_PATTERN = /https:\/\/[A-Za-z0-9\-._~:/?#@!$&+,;=%]+/gu;
+/** 裸のメールアドレス。ドメインは . で区切った 2 つ以上の部分で、文末の . は含めない。 */
+const EMAIL_PATTERN = /(?<![A-Za-z0-9._%+-])[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)+/gu;
 /** 句読点で終わる URL は、その記号が URL の一部か文の区切りかが曖昧になる。 */
 const AMBIGUOUS_URL_END = /[.,;:!?]$/u;
 /** 自サイトのオリジン。古い app.yutodev.com の URL は承認済みの原文に残るので、同じサイトとして扱う。 */
@@ -61,6 +63,18 @@ function urlEndsAt(text: string, start: number, end: number): boolean {
   return next === ")" && text[start - 1] === "(" && (isBreak(after) || /\p{P}/u.test(after!));
 }
 
+/** URL を含まない文の中の裸のメールアドレスを、表示を変えずに mailto: のリンクにする。 */
+function emails(text: string): string {
+  let html = "";
+  let cursor = 0;
+  for (const match of text.matchAll(EMAIL_PATTERN)) {
+    const address = match[0];
+    html += escapeText(text.slice(cursor, match.index)) + `<a href="mailto:${escapeAttribute(address)}">${escapeText(address)}</a>`;
+    cursor = match.index + address.length;
+  }
+  return html + escapeText(text.slice(cursor));
+}
+
 function inline(text: string): string {
   if (UNSUPPORTED_INLINE.test(text)) throw new Error(`未対応のインライン書式: ${text}`);
   let html = "";
@@ -69,10 +83,11 @@ function inline(text: string): string {
     const url = match[0];
     const end = match.index + url.length;
     if (AMBIGUOUS_URL_END.test(url) || !urlEndsAt(text, match.index, end)) throw new Error(`URL の終わりが曖昧: ${text}`);
-    html += escapeText(text.slice(cursor, match.index)) + link(url);
+    // URL の中の @ はメールとして扱わないよう、URL の外側だけを調べる。
+    html += emails(text.slice(cursor, match.index)) + link(url);
     cursor = end;
   }
-  return html + escapeText(text.slice(cursor));
+  return html + emails(text.slice(cursor));
 }
 
 /** `# ` / `## ` の後に本文が続き、閉じの # を持たない見出しだけを受け付ける。 */

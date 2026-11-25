@@ -1006,8 +1006,14 @@ test("OGP metadata とサイト共通の法務ページ", async ({ page, request
   await expectColorContrast(page);
 });
 
-test("/ は /apps/ へのリンクだけを置く", async ({ page }) => {
+test("/ は yutodev.com の見出しと題を持ち、/apps/ へのリンクだけを置く", async ({ page }) => {
   await page.goto("/");
+  await expect(page.locator("h1")).toHaveCount(1);
+  await expect(page.locator("h1")).toHaveText("yutodev.com");
+  await expect(page).toHaveTitle("yutodev.com");
+  await expect(page.locator('meta[property="og:title"]')).toHaveAttribute("content", "yutodev.com");
+  await expect(page.locator('meta[property="og:site_name"]')).toHaveAttribute("content", "yutodev.com");
+  await expect(page.locator('meta[name="twitter:title"]')).toHaveAttribute("content", "yutodev.com");
   const links = page.locator("a[href]");
   await expect(links).toHaveCount(1);
   await expect(links.first()).toHaveAttribute("href", "/apps/");
@@ -1066,6 +1072,13 @@ test("/apps/ の canonical と og:url は /apps/ を指す", async ({ page }) =>
   await page.goto("/apps/");
   await expect(page.locator('link[rel="canonical"]')).toHaveAttribute("href", "https://yutodev.com/apps/");
   await expect(page.locator('meta[property="og:url"]')).toHaveAttribute("content", "https://yutodev.com/apps/");
+});
+
+test("SubLog の法務ページのメールアドレスは押せる mailto: のリンクになる", async ({ page }) => {
+  await page.goto("/apps/sublog/support/");
+  const mail = page.locator('a[href="mailto:support@yutodev.com"]');
+  await expect(mail).toHaveCount(2);
+  await expect(mail.first()).toHaveText("support@yutodev.com");
 });
 
 test("入口 / を通ってきた初回の訪問でも /apps/ で Hero を再生する", async ({ page }) => {
