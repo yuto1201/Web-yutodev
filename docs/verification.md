@@ -16,7 +16,7 @@ Cloudflare Pages のビルドは `.node-version` で Node 24.20.0 を指定す�
 
 `next start` は静的 export では使わない。ローカル配信に実行時ダウンロードや SPA fallback を使わない。E2E は既存の別サーバーを再利用せず、ポート競合も失敗として報告する。
 
-CI は Linux の `Repository checks` と `Browser checks` を実行し、ブラウザ失敗時にレポート・trace を保存する。`Repository checks` は commit SHA で固定した setup-python と `.python-version` を使い、システム Python を変更しない。通常モーションを既定とし、reduced-motion は専用テストで確認する。iPhone 15 相当の viewport を Chromium で確認するものであり、Safari / 実機検証を意味しない。
+CI は Linux の `Repository checks` と `Browser checks` を実行し、ブラウザ失敗時にレポート・trace を保存する。`Repository checks` は commit SHA で固定した setup-python と `.python-version` を使い、システム Python を変更しない。`.python-version` の 3.13.3 は Ubuntu 26.04 向けに配られていないため、`Repository checks` のランナーは `ubuntu-24.04` に固定する（#154）。24.04 のランナーが使えなくなる前に、Python の固定を見直す。通常モーションを既定とし、reduced-motion は専用テストで確認する。iPhone 15 相当の viewport を Chromium で確認するものであり、Safari / 実機検証を意味しない。
 
 トップは保存テーマに応じて、空色に黒い文字と夜色に明るい文字の単色キャンバスを切り替える。パステルの各パネルと Nav の明るい面は黒い文字を維持する。Hero の装飾ワードマークはアウトライン SVG の存在・表示・読み上げ除外を確認し、透過ループも読み上げ対象にしない。実際のブランド名と見出し・本文は引き続きテキストとして確認する。8枚のステッカーの初期境界と、下端72pxの操作領域・本文との非重複を320〜1280pxと英語で確認する。ドラッグ後のスクロールは文書座標が変わらないことを検証する。CafLog は実アイコンと実画面を使う明るい地色・濃い文字の専用構成、SubLog は明るい地色に青と黄緑の専用構成、PayCycle は白系の紙・濃紺・赤・黄の専用構成、共通の個別ページと法務は紙面トークンの単色キャンバスを使う。E2E の axe `color-contrast` は実装値のまま判定し、背景を単色へ倒さない。`color-contrast` が `incomplete` の場合や pass が 0 件の場合も失敗させる。アプリページ用 CSS は遷移後もブラウザに残るため、各詳細と各アプリの privacy を `page.goto` で直接開き、表示中の body と各ページのルート要素の配色を検証する。登録済みのアプリ terms（PayCycle と SimplePomo）も同様に直接開く。`request.get` は HTML と OGP の実在確認であり、CSS は適用しない。詳細から privacy へのクリック遷移と、トップへ戻った後の `.app-shell` 不在・body 配色も別途確認する。見出し階層（`h2` > `h3` ≥ 本文）は `h3` を持つ PayCycle と SimplePomo の法務で測る。
 
