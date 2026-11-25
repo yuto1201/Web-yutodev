@@ -41,11 +41,11 @@ describe("development checks", () => {
       "          .venv-ogp/bin/python -m pip install --disable-pip-version-check --no-deps --require-hashes -r tools/requirements-ogp.txt",
       "          echo \"$GITHUB_WORKSPACE/.venv-ogp/bin\" >> \"$GITHUB_PATH\"",
     ].join("\n");
-    expect(validatePythonSetup(setup, "3.13.3")).toEqual([]);
-    expect(validatePythonSetup(setup.replace(/@[0-9a-f]{40}/u, "@v6"), "3.13.3")).toContain("CI setup-python action must use an immutable commit");
-    expect(validatePythonSetup(setup.replace(".python-version", "3.13"), "3.13.3")).toContain("CI must use the repository Python pin");
-    expect(validatePythonSetup(setup.replace("python -m venv .venv-ogp", "python -m pip install Pillow"), "3.13.3")).toContain("CI must install OGP dependencies in an isolated virtual environment");
-    expect(validatePythonSetup(setup.replace(".venv-ogp/bin/python -m pip install", "python -m pip install"), "3.13.3")).toContain("CI must install OGP dependencies in an isolated virtual environment");
+    expect(validatePythonSetup(setup, "3.13.18")).toEqual([]);
+    expect(validatePythonSetup(setup.replace(/@[0-9a-f]{40}/u, "@v6"), "3.13.18")).toContain("CI setup-python action must use an immutable commit");
+    expect(validatePythonSetup(setup.replace(".python-version", "3.13"), "3.13.18")).toContain("CI must use the repository Python pin");
+    expect(validatePythonSetup(setup.replace("python -m venv .venv-ogp", "python -m pip install Pillow"), "3.13.18")).toContain("CI must install OGP dependencies in an isolated virtual environment");
+    expect(validatePythonSetup(setup.replace(".venv-ogp/bin/python -m pip install", "python -m pip install"), "3.13.18")).toContain("CI must install OGP dependencies in an isolated virtual environment");
     expect(validatePythonSetup(setup, "3.13")).toContain("Exact local Python pin is required");
   });
   it("requires the isolated OGP Python and fails closed when it is absent", async () => {
