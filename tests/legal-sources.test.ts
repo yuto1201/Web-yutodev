@@ -194,6 +194,17 @@ describe("法務 Markdown の描画", () => {
       .toBe('<p><a href="/apps/flower/support/">https://yutodev.com/apps/flower/support/</a></p>');
   });
 
+  it("裸のメールアドレスは表示を変えずに mailto: のリンクにし、URL の中の @ は触らない", () => {
+    const mail = '<a href="mailto:support@yutodev.com">support@yutodev.com</a>';
+    expect(renderLegalMarkdown(`${confirmed}返信が必要なご質問は、support@yutodev.com へお送りください。\n`).body)
+      .toBe(`<p>返信が必要なご質問は、${mail} へお送りください。</p>`);
+    expect(renderLegalMarkdown(`${confirmed}Please contact support@yutodev.com.\n`).body)
+      .toBe(`<p>Please contact ${mail}.</p>`);
+    expect(renderLegalMarkdown(`${confirmed}https://example.net/@user と support@yutodev.com\n`).body)
+      .toBe(`<p><a href="https://example.net/@user" target="_blank" rel="noopener noreferrer">https://example.net/@user</a> と ${mail}</p>`);
+    expect(renderLegalMarkdown(`${confirmed}X の @Yuto_Program へ\n`).body).toBe("<p>X の @Yuto_Program へ</p>");
+  });
+
   it("ほかのサブドメインは外部リンクのまま", () => {
     expect(renderLegalMarkdown(`${confirmed}https://web-template.yutodev.com/\n`).body).toContain('target="_blank"');
   });
